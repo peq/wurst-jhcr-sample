@@ -1,0 +1,24 @@
+package ExampleUnit
+import UnitObjEditing
+import ObjectIdGenerator
+import WurstSpell
+import ObjectIds
+
+constant WURST_DRUID = compiletime(UNIT_ID_GEN.next())
+
+// Create an example unit
+@compiletime
+function myDruid()
+    new UnitDefinition(WURST_DRUID, 'edoc')
+    ..setName("Druid of the Wurst")
+    ..setNormalAbilities(toRawCode(WurstSpell_ID))
+    ..setHitPointsMaximumBase(1337)
+    ..setHitPointsRegenerationRate(4.)
+
+
+init
+    let p = Player(0)
+    createUnit(p, WURST_DRUID, p.getStartLocation(), angle(0))
+
+
+

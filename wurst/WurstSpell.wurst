@@ -1,0 +1,65 @@
+package WurstSpell
+import ChannelAbilityPreset
+import Assets
+import Fx
+import ClosureTimers
+import Interpolation
+import ClosureEvents
+import ClosureForGroups
+
+public constant WurstSpell_ID = compiletime(ABIL_ID_GEN.next())
+constant DT = 1./32
+
+@compiletime function genObj()
+    new ChannelAbilityPreset(WurstSpell_ID, 4, true)
+    ..setName("Wurst")
+    ..presetTooltipNormal(lvl -> "Wurst [|cffffcc00Q|r]")
+    ..presetTooltipNormalExtended(lvl -> "A wurst spell")
+    ..presetIcon(Icons.bTNAmuletOftheWild)
+    ..presetButtonPosNormal(0, 0)
+    ..presetManaCost(lvl -> 0)
+    ..presetCooldown(lvl -> 1.)
+    ..presetHotkey("Q")
+    ..presetTargetTypes(Targettype.POINT)
+    ..presetOption(Option.TARGETIMAGE, false)
+    ..setCastRange(0, 1000)
+    ..setCastRange(1, 1000)
+
+init
+    EventListener.onPointCast(WurstSpell_ID) (unit caster, vec2 spellTarget) ->
+        println("Cast")
+        let direction = (spellTarget - caster.getPos()).norm()
+        let start = caster.getPos() + 10 * direction
+        missile(caster, start, direction, direction.rotate(angle(90)))
+        missile(caster, start, direction, direction.rotate(angle(-90)))
+
+var hit = false
+
+function missile(unit caster, vec2 start, vec2 forwards, vec2 sidewards)
+    let p1 = start + sidewards * 500 - forwards * 100
+    let p2 = start + sidewards * 600 + forwards * 300
+    let stop = start + sidewards * 500 + forwards * 700
+    let missile = new Fx(start, Abilities.fireBallMissile) 
+    missile.setZ(60.)
+    var time = 0.
+    let endTime = 1.0
+    
+    doPeriodically(DT) (CallbackPeriodic cb) ->
+        println("periodic " + R2S(time))
+        if time > endTime
+            destroy missile
+            destroy cb
+        else
+            time += DT
+            let p = start.bezier4(p1, p2, stop, time / endTime)
+            missile.setXY(p)
+            hit = false
+            forUnitsInRange(p, 90) (unit u) ->
+                if not hit and u.isAlive() and u.isEnemyOf(caster.getOwner())
+                    caster.damageTarget(u, 200.)
+                    hit = true
+            if hit
+                destroy missile
+                destroy cb
+                            
+        

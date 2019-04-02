@@ -1,0 +1,6 @@
+---
+projectName: wspell
+buildMapData:
+  name: MyMapName
+  fileName: MyMapFile
+  author: Peter
