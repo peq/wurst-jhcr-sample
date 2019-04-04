@@ -53,6 +53,7 @@ function missile(unit caster, vec2 start, vec2 forwards, vec2 sidewards)
             time += DT
             let p = start.bezier4(p1, p2, stop, time / endTime)
             missile.setXY(p)
+            missile.setXYAngle(start.derivBezier4(p1, p2, stop, time / endTime).getAngle())
             hit = false
             forUnitsInRange(p, 90) (unit u) ->
                 if not hit and u.isAlive() and u.isEnemyOf(caster.getOwner())
